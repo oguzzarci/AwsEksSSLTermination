@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssltermination
+  namespace: work
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssltermination
+  template:
+    metadata:
+      labels:
+        app: ssltermination
+    spec:
+      containers:
+        - name: ssltermination
+          image: oguzzarci/awseksssltermination:0.1
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: 50m
+              memory: 64Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssltermination
+  namespace: work
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: XXXX  
+spec:
+  type: LoadBalancer
+  selector:
+    app: ssltermination
+  ports:
+    - protocol: TCP
+      port: 443
+      targetPort: 80
